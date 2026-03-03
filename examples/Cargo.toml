@@ -54,6 +54,10 @@ name = "z_scout"
 path = "examples/z_scout.rs"
 
 [[example]]
+name = "z_scout_with_metadata"
+path = "examples/z_scout_with_metadata.rs"
+
+[[example]]
 name = "z_info"
 path = "examples/z_info.rs"
 

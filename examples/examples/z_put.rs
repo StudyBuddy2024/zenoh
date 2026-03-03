@@ -13,6 +13,7 @@
 //
 use clap::Parser;
 use zenoh::{key_expr::KeyExpr, Config};
+use zenoh::bytes::Encoding;
 use zenoh_examples::CommonArgs;
 
 #[tokio::main]
@@ -27,7 +28,7 @@ async fn main() {
 
     println!("Putting Data ('{key_expr}': '{payload}')...");
     // Refer to z_bytes.rs to see how to serialize different types of message
-    session.put(&key_expr, payload).await.unwrap();
+    session.put(&key_expr, payload).encoding(Encoding::APPLICATION_JSON).await.unwrap();
 }
 
 #[derive(clap::Parser, Clone, PartialEq, Eq, Hash, Debug)]

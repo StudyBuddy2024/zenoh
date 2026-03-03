@@ -1,0 +1,45 @@
+
+{
+  /// The node's metadata (name, location, DNS name, etc.)
+  /// Arbitrary JSON data not interpreted by zenoh and available in admin space
+  /// @/<zid>/router, @/<zid>/peer or @/<zid>/client
+  metadata: {
+    name: "machine-name",
+    location: "employee-desk",
+  },
+  connect: {
+    endpoints: [],  // Empty for discovery-only mode
+  },
+  listen: {
+    endpoints: { router: ["tcp/[::]:7447"], peer: ["tcp/[::]:0"] },
+  },
+  scouting: {
+    timeout: 3000,
+    delay: 500,
+    multicast: {
+      enabled: true,              // Enable multicast scouting
+      address: "224.0.0.224:7446", // Default multicast address
+      interface: "auto",           // Auto-detect interface
+      ttl: 1,                      // Time-to-live for multicast packets
+      autoconnect: {
+        router: ["router", "peer"], // Autoconnect to routers and peers
+        peer: ["router", "peer"],
+        client: ["router"]
+      },
+      autoconnect_strategy: {
+        router: { to_router: "greater-zid", to_peer: "greater-zid" },
+        peer: { to_router: "always", to_peer: "always" }
+      },
+      listen: true,                // IMPORTANT: Respond to scout messages
+    },
+    gossip: {
+      enabled: true,               // Enable gossip protocol
+      multihop: false,             // Single-hop gossip
+      target: { router: ["router", "peer"], peer: ["router", "peer"] },
+      autoconnect: { router: [], peer: ["router", "peer"] },
+      autoconnect_strategy: {
+        peer: { to_router: "always", to_peer: "always" }
+      },
+    },
+  },
+}

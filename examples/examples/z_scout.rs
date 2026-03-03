@@ -18,14 +18,22 @@ async fn main() {
     // initiate logging
     zenoh::init_log_from_env_or("error");
 
-    println!("Scouting...");
+    println!("Scouting for Zenoh nodes...");
+    println!("Note: Scout messages only contain zid, whatami, and locators.");
+    println!("To access metadata (name, location, etc.), you must connect to each node");
+    println!("and query its admin space (e.g., @/<zid>/router).\n");
+
     let receiver = scout(WhatAmI::Peer | WhatAmI::Router, Config::default())
         .await
         .unwrap();
 
     let _ = tokio::time::timeout(std::time::Duration::from_secs(1), async {
         while let Ok(hello) = receiver.recv_async().await {
-            println!("{hello}");
+            println!("Hello!! Discovered:");
+            println!("  ZID: {}", hello.zid());
+            println!("  Type: {}", hello.whatami());
+            println!("  Locators: {:?}", hello.locators());
+            println!();
         }
     })
     .await;
