@@ -11,6 +11,7 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+use std::collections::HashSet;
 use zenoh::{config::WhatAmI, scout, Config};
 
 #[tokio::main]
@@ -23,13 +24,17 @@ async fn main() {
         .await
         .unwrap();
 
-    // Collect discovered nodes
+    // Collect discovered nodes (only unique ones)
     let mut discovered_nodes = Vec::new();
+    let mut seen_zids = HashSet::new();
 
     let _ = tokio::time::timeout(std::time::Duration::from_secs(2), async {
         while let Ok(hello) = receiver.recv_async().await {
-            println!("Discovered node: {}", hello);
-            discovered_nodes.push(hello);
+            // Only add node if we haven't seen this zid before
+            if seen_zids.insert(hello.zid()) {
+                println!("Discovered node: {}", hello);
+                discovered_nodes.push(hello);
+            }
         }
     })
     .await;
@@ -37,7 +42,7 @@ async fn main() {
     // stop scouting
     receiver.stop();
 
-    println!("\nTotal nodes discovered: {}", discovered_nodes.len());
+    println!("\nTotal unique nodes discovered: {}", discovered_nodes.len());
 
     // Now try to connect to each discovered node and query its metadata
     for hello in discovered_nodes {
