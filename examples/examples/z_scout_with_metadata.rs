@@ -75,7 +75,27 @@ async fn main() {
                             while let Ok(reply) = replies.recv_async().await {
                                 match reply.result() {
                                     Ok(sample) => {
-                                        println!("  Reply: key={}, value={:?}", sample.key_expr(), sample.payload());
+                                        println!("  Reply: key={}", sample.key_expr());
+
+                                        // Try to decode the payload as JSON for better readability
+                                        let payload_bytes = sample.payload().to_bytes();
+                                        if let Ok(json_str) = std::str::from_utf8(&payload_bytes) {
+                                            // Try to parse and pretty-print the JSON
+                                            if let Ok(pretty_json) = serde_json::from_str::<serde_json::Value>(json_str) {
+                                                println!("  Value (pretty):");
+                                                if let Some(metadata) = pretty_json.get("metadata") {
+                                                    println!("    Metadata: {}", serde_json::to_string_pretty(metadata).unwrap_or_default());
+                                                } else {
+                                                    println!("    {}", serde_json::to_string_pretty(&pretty_json).unwrap_or_default());
+                                                }
+                                            } else {
+                                                // If parsing fails, just show the string
+                                                println!("  Value: {}", json_str);
+                                            }
+                                        } else {
+                                            // If not valid UTF-8, show hex
+                                            println!("  Value (hex): {:?}", payload_bytes);
+                                        }
                                     }
                                     Err(e) => {
                                         println!("  Error: {}", e);
